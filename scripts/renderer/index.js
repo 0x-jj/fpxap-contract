@@ -2,7 +2,7 @@
 require("dotenv").config();
 
 const ethers = require("ethers");
-const ABI = require("../../artifacts/contracts/APxFP.sol/APxFP.json");
+const ABI = require("../../artifacts/contracts/WithinWithout.sol/WithinWithout.json");
 const AWS = require("aws-sdk");
 
 AWS.config.update({

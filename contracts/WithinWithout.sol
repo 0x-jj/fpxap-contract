@@ -13,7 +13,7 @@ import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract APxFP is Context, PaymentSplitter, ERC721, ReentrancyGuard, AccessControl, Ownable {
+contract WithinWithout is Context, PaymentSplitter, ERC721, ReentrancyGuard, AccessControl, Ownable {
     using Address for address;
 
     struct Collection {
@@ -50,24 +50,21 @@ contract APxFP is Context, PaymentSplitter, ERC721, ReentrancyGuard, AccessContr
 
     address public prints;
 
-    string private baseURI_ = "to.update/";
+    string private baseURI_ = "https://www.withinwithout.xyz/api/token/metadata/";
+    string public scriptIpfs = "";
 
     constructor(
         address[] memory payees_,
         uint256[] memory shares_,
         address[] memory admins_,
         Collection memory collection_,
-        bytes32 merkleRootSingleMint_,
-        bytes32 merkleRootDoubleMint_,
         address prints_
-    ) ERC721("APxFP", "APxFP") PaymentSplitter(payees_, shares_) {
+    ) ERC721("Within/Without", "WW") PaymentSplitter(payees_, shares_) {
         _grantRole(DEFAULT_ADMIN_ROLE, _msgSender());
         for (uint256 i = 0; i < admins_.length; i++) {
             _grantRole(DEFAULT_ADMIN_ROLE, admins_[i]);
         }
         collection = collection_;
-        merkleRootSingleMint = merkleRootSingleMint_;
-        merkleRootDoubleMint = merkleRootDoubleMint_;
         prints = prints_;
     }
 
@@ -82,6 +79,18 @@ contract APxFP is Context, PaymentSplitter, ERC721, ReentrancyGuard, AccessContr
     function startPresale() external onlyRole(DEFAULT_ADMIN_ROLE) {
         publicSaleStartingBlock = block.number + 240; // ~ One hour after presale starts
         presaleStarted = true;
+    }
+
+    function updatePublicSaleStartBlock(uint256 startingBlock) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        publicSaleStartingBlock = startingBlock;
+    }
+
+    function setMerkleRoots(bytes32 merkleRootSingleMint_, bytes32 merkleRootDoubleMint_)
+        external
+        onlyRole(DEFAULT_ADMIN_ROLE)
+    {
+        merkleRootSingleMint = merkleRootSingleMint_;
+        merkleRootDoubleMint = merkleRootDoubleMint_;
     }
 
     function mintReserved(uint256 count) public nonReentrant onlyRole(DEFAULT_ADMIN_ROLE) {
@@ -193,6 +202,10 @@ contract APxFP is Context, PaymentSplitter, ERC721, ReentrancyGuard, AccessContr
 
     function _baseURI() internal view override returns (string memory) {
         return baseURI_;
+    }
+
+    function setScriptIpfs(string memory url) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        scriptIpfs = url;
     }
 
     /**

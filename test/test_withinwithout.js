@@ -20,7 +20,7 @@ const DEPLOYER_SPLIT = 80; // 8%
 const ADMIN_1_SPLIT = 184; // 18.4 %
 const ADMIN_2_SPLIT = 736; // 73.6 %
 
-describe("APxFP", async function () {
+describe("WithinWithout", async function () {
   let CONTRACT;
   let DEPLOYER;
   let ADMIN_1;
@@ -51,16 +51,15 @@ describe("APxFP", async function () {
   });
 
   beforeEach(async () => {
-    const APxFP = await ethers.getContractFactory("APxFP");
-    CONTRACT = await APxFP.deploy(
+    const WithinWithout = await ethers.getContractFactory("WithinWithout");
+    CONTRACT = await WithinWithout.deploy(
       [DEPLOYER.address, ADMIN_1.address, ADMIN_2.address],
       [DEPLOYER_SPLIT, ADMIN_1_SPLIT, ADMIN_2_SPLIT],
       [ADMIN_1.address, ADMIN_2.address, ADMIN_3.address],
       COLLECTION_INFO,
-      singleMerkleRoot,
-      doubleMerkleRoot,
       PRINTS_ADDRESS
     );
+    await CONTRACT.connect(DEPLOYER).setMerkleRoots(singleMerkleRoot, doubleMerkleRoot);
     return CONTRACT;
   });
 
@@ -367,7 +366,7 @@ describe("APxFP", async function () {
   it("Allows updating the baseURI", async function () {
     await CONTRACT.connect(DEPLOYER).mintReserved(1);
     const initialTokenUri = await CONTRACT.tokenURI(0);
-    expect(initialTokenUri).to.equal("to.update/0");
+    expect(initialTokenUri).to.equal("https://www.withinwithout.xyz/api/token/metadata/0");
 
     await CONTRACT.connect(DEPLOYER).setBaseURI("updated/");
     const newTokenUri = await CONTRACT.tokenURI(0);

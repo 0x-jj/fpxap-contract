@@ -52,16 +52,15 @@ describe("Full Sale", async function () {
     singleMerkleRoot = SINGLE_MERKLE_TREE.getRoot();
     doubleMerkleRoot = DOUBLE_MERKLE_TREE.getRoot();
 
-    const APxFP = await ethers.getContractFactory("APxFP");
-    CONTRACT = await APxFP.deploy(
+    const WithinWithout = await ethers.getContractFactory("WithinWithout");
+    CONTRACT = await WithinWithout.deploy(
       [DEPLOYER.address, ADMIN_1.address, ADMIN_2.address],
       [DEPLOYER_SPLIT, ADMIN_1_SPLIT, ADMIN_2_SPLIT],
       [ADMIN_1.address, ADMIN_2.address, ADMIN_3.address],
       COLLECTION_INFO,
-      singleMerkleRoot,
-      doubleMerkleRoot,
       PRINTS_ADDRESS
     );
+    await CONTRACT.connect(DEPLOYER).setMerkleRoots(singleMerkleRoot, doubleMerkleRoot);
   });
 
   it("Runs as expected", async function () {

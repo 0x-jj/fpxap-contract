@@ -7,6 +7,8 @@ require("solidity-coverage");
 require("hardhat-contract-sizer");
 require("hardhat-gas-reporter");
 
+const getMerkleRoots = require("./lib/merkle").getMerkleRoots;
+
 // This is a sample Hardhat task. To learn how to create your own go to
 // https://hardhat.org/guides/create-task.html
 task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
@@ -21,7 +23,7 @@ task("startPresale", "Start the presale")
   .addParam("contract", "The contract address")
   .setAction(async (taskArgs) => {
     const [deployer] = await hre.ethers.getSigners();
-    const contract = await ethers.getContractFactory("APxFP");
+    const contract = await ethers.getContractFactory("WithinWithout");
     const deployed = await contract.attach(taskArgs.contract);
     await deployed.connect(deployer).startPresale();
   });
@@ -31,7 +33,7 @@ task("mintReserved", "Start the presale")
   .addParam("contract", "The contract address")
   .setAction(async (taskArgs) => {
     const signers = await hre.ethers.getSigners();
-    const contract = await ethers.getContractFactory("APxFP");
+    const contract = await ethers.getContractFactory("WithinWithout");
     const deployed = await contract.attach(taskArgs.contract);
     await deployed.connect(signers[taskArgs.signerindex]).mintReserved(1);
   });
@@ -40,9 +42,29 @@ task("setBaseUri", "Set the base token URI")
   .addParam("contract", "The contract address")
   .setAction(async (taskArgs) => {
     const [deployer] = await hre.ethers.getSigners();
-    const contract = await ethers.getContractFactory("APxFP");
+    const contract = await ethers.getContractFactory("WithinWithout");
     const deployed = await contract.attach(taskArgs.contract);
-    await deployed.connect(deployer).setBaseURI("https://ap-x-fp-iota.vercel.app/api/token/metadata/");
+    await deployed.connect(deployer).setBaseURI("https://www.withinwithout.xyz/api/token/metadata/");
+  });
+
+task("releaseFunds", "Release sale funds")
+  .addParam("signerindex", "Index of the address to send to")
+  .addParam("contract", "The contract address")
+  .setAction(async (taskArgs) => {
+    const signers = await hre.ethers.getSigners();
+    const contract = await ethers.getContractFactory("WithinWithout");
+    const deployed = await contract.attach(taskArgs.contract);
+    await deployed.connect(signers[1]).release(signers[taskArgs.signerindex].address);
+  });
+
+task("setMerkleRoots", "Set the merkle roots")
+  .addParam("contract", "The contract address")
+  .setAction(async (taskArgs) => {
+    const { single, double } = getMerkleRoots();
+    const [deployer] = await hre.ethers.getSigners();
+    const contract = await ethers.getContractFactory("WithinWithout");
+    const deployed = await contract.attach(taskArgs.contract);
+    await deployed.connect(deployer).setMerkleRoots(single, double);
   });
 
 // You need to export an object to set up your config

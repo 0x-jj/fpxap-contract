@@ -74,14 +74,14 @@ async function getAssetsForCollectionFromOpensea(collection_slug) {
   let next = null;
 
   do {
-    console.log(`Fetching ${limit} assets with cursor=${next}. Total retrieved ${allAssets.length}`);
+    // console.log(`Fetching ${limit} assets with cursor=${next}. Total retrieved ${allAssets.length}`);
     const rv = await getAssetsFromOpensea(collection_slug, limit, next);
     assets = rv.assets;
     next = rv.next;
     allAssets.push(...assets);
   } while (next);
 
-  console.log(`Retrieved ${allAssets.length} total!`);
+  console.log(`Retrieved ${allAssets.length} ${collection_slug} total!`);
   return allAssets;
 }
 
@@ -92,6 +92,16 @@ async function avidLinesOwners() {
 
 async function jimsOwners() {
   const allAssets = await getAssetsForCollectionFromOpensea("the-jims");
+  return allAssets.map((asset) => asset.owner.address);
+}
+
+async function autoglyphOwners() {
+  const allAssets = await getAssetsForCollectionFromOpensea("autoglyphs");
+  return allAssets.map((asset) => asset.owner.address);
+}
+
+async function seedCapitalOwners() {
+  const allAssets = await getAssetsForCollectionFromOpensea("seed-capital");
   return allAssets.map((asset) => asset.owner.address);
 }
 
@@ -125,15 +135,20 @@ async function getSuperRareOwners(ids) {
 }
 
 async function oneOfOneOwners() {
-  const foundationTokens = [7159, 386, 74075];
-  const superRareTokens = [24828, 24827, 24826, 22920];
+  const foundationTokens = ["7159", "386", "74075"];
+  const superRareTokens = ["24828", "24827", "24826", "22920"];
   const openSeaSlug = "aaronpenne";
+  const openSeaSlug2 = "aaron-penne-one-of-ones";
 
   const f = await getFoundationOwners(foundationTokens);
   const sr = await getSuperRareOwners(superRareTokens);
   let os = await getAssetsForCollectionFromOpensea(openSeaSlug);
+  let os2 = await getAssetsForCollectionFromOpensea(openSeaSlug2);
+
   os = os.map((asset) => asset.owner.address);
-  return f.concat(sr, os);
+  os2 = os2.map((asset) => asset.owner.address);
+
+  return f.concat(sr, os, os2);
 }
 
 async function main() {
@@ -143,21 +158,29 @@ async function main() {
 
   console.log("Getting avidlines owners");
   const al = await avidLinesOwners();
-  console.log(`There are ${al.length} avidlines owners`);
+  console.log(`There are ${new Set(al).size} avidlines owners`);
+
+  console.log("Getting autoglyph owners");
+  const ag = await autoglyphOwners();
+  console.log(`There are ${new Set(ag).size} autoglyph owners`);
+
+  console.log("Getting seed capital owners");
+  const sc = await seedCapitalOwners();
+  console.log(`There are ${new Set(sc).size} seed capital owners`);
 
   console.log("Getting jims owners");
   const jims = await jimsOwners();
-  console.log(`There are ${jims.length} jims owners`);
+  console.log(`There are ${new Set(jims).size} jims owners`);
 
   console.log("Getting art blocks owners");
   const ab = await artBlocksOwners();
-  console.log(`There are ${ab.length} art blocks owners`);
+  console.log(`There are ${new Set(ab).size} art blocks owners`);
 
   console.log("Getting one of one owners");
   const ooo = await oneOfOneOwners();
-  console.log(`There are ${ooo.length} one of one owners`);
+  console.log(`There are ${new Set(ooo).size} one of one owners`);
 
-  const owners = fp.concat(al, jims, ab, ooo);
+  const owners = fp.concat(al, jims, ab, ooo, ag, sc);
 
   const count = {};
   for (const owner of owners) {
